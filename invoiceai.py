@@ -12,7 +12,6 @@ import textwrap
 import time
 import pandas as pd
 from PIL import Image
-import cv2
 import numpy as np
 
 import google.generativeai as genai
