@@ -11,7 +11,6 @@ import pathlib
 import textwrap
 import time
 import pandas as pd
-import pytesseract
 from PIL import Image
 import cv2
 import numpy as np
