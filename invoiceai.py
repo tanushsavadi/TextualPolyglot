@@ -50,7 +50,7 @@ st.set_page_config(page_title="Gemini Image Demo")
 
 st.header("TextualPolyglot")
 ##add a smaller description text below
-st.write("TextualPolyglot is a tool that helps you extract and ask questions about information from invoices, bills, newspapers, and other various form of imagery mediums in various different languages. The tool is powered by Google's Gemini engine.")
+st.write("TextualPolyglot is a tool that helps you ask questions about information from invoices, bills, newspapers, and other forms of imagery mediums in various languages. Google's Gemini engine powers the tool.")
 
 inputs = st.text_area("Input Prompts (comma-separated):", key="inputs")
 uploaded_files = st.file_uploader("Choose multiple images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
