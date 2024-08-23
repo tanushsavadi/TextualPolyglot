@@ -22,7 +22,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 ## Function to load OpenAI model and get responses
 
 def get_gemini_responses(inputs, images, prompts):
-    model = genai.GenerativeModel('gemini-pro-vision')
+    model = genai.GenerativeModel('gemini-1.5-flash')
     responses = []
     for input, image, prompt in zip(inputs, images, prompts):
         response = model.generate_content([input, image, prompt])
