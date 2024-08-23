@@ -1,9 +1,9 @@
 # Q&A Chatbot
-# from langchain.llms import OpenAI
+from langchain.llms import OpenAI
 
 from dotenv import load_dotenv
 
-load_dotenv()  # take environment variables from .env.
+load_dotenv()  # Take environment variables from .env.
 
 import streamlit as st
 import os
@@ -24,11 +24,17 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 def get_gemini_responses(inputs, images, prompts):
     model = genai.GenerativeModel('gemini-1.5-flash')
     responses = []
-    for input, image, prompt in zip(inputs, images, prompts):
-        response = model.generate_content([input, image, prompt])
-        response_parts = response.parts  # Use response.parts instead of response.text
-        text_content = response_parts[0].text if response_parts else "No text found"
-        responses.append(text_content)
+    
+    # Ensure that we loop through both inputs and prompts
+    for input, image in zip(inputs, images):
+        # Loop through each prompt for each image
+        prompt_responses = []
+        for prompt in prompts:
+            response = model.generate_content([input, image, prompt])
+            response_parts = response.parts  # Use response.parts instead of response.text
+            text_content = response_parts[0].text if response_parts else "No text found"
+            prompt_responses.append(text_content)
+        responses.append(prompt_responses)
     return responses
 
 def input_images_setup(uploaded_files):
@@ -44,12 +50,12 @@ def input_images_setup(uploaded_files):
         image_parts_list.append(image_parts)
     return image_parts_list
 
-##initialize our streamlit app
+## Initialize our streamlit app
 
 st.set_page_config(page_title="Gemini Image Demo")
 
 st.header("TextualPolyglot")
-##add a smaller description text below
+## Add a smaller description text below
 st.write("TextualPolyglot is a tool that helps you ask questions about information from invoices, bills, newspapers, and other forms of imagery mediums in various languages. Google's Gemini engine powers the tool.")
 
 inputs = st.text_area("Input Prompts (comma-separated):", key="inputs")
@@ -68,8 +74,25 @@ if uploaded_files is not None:
 
 submit = st.button("Tell me about the images")
 
+# Custom CSS to change the submit button color
+st.markdown("""
+    <style>
+    .stButton > button {
+        background-color: #4CAF50; /* Green */
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+    .stButton > button:hover {
+        background-color: #45a049; /* Darker green on hover */
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 input_prompt = """
-               You are an expert in understanding invoices, bills, newspapers and articles.
+               You are an expert in understanding invoices, bills, newspapers, and articles.
                You will receive input images as invoices, bills, newspapers, and other such mediums &
                you will have to answer questions based on the input image
                """
@@ -84,25 +107,27 @@ if submit:
     progress_placeholder = st.empty()
     progress_bar = progress_placeholder.progress(0)
     
-    responses = get_gemini_responses(input_prompt, image_data_list, input_list)
+    responses = get_gemini_responses([input_prompt] * total_images, image_data_list, input_list)
     
     st.subheader("The Responses are")
     
     # Create a DataFrame to store the extracted information
-    df_data = {"Image": [], "Response": []}
+    df_data = {"Image": [], "Prompt": [], "Response": []}
     
-    for i, (response, image) in enumerate(zip(responses, images)):
-        st.write(f"Response {i + 1}: {response}")
-        
-        # Update progress bar
-        progress_value = (i + 1) / total_images
-        progress_bar.progress(progress_value)
-        # Add a small sleep to allow the UI to update
-        time.sleep(0.2)
-        
-        # Append data to the DataFrame
-        df_data["Image"].append(f"Image_{i + 1}")
-        df_data["Response"].append(response)
+    for i, (prompt_responses, image) in enumerate(zip(responses, images)):
+        for j, response in enumerate(prompt_responses):
+            st.write(f"Response for Image {i + 1}, Prompt {j + 1}: {response}")
+            
+            # Update progress bar
+            progress_value = (i + 1) / total_images
+            progress_bar.progress(progress_value)
+            # Add a small sleep to allow the UI to update
+            time.sleep(0.2)
+            
+            # Append data to the DataFrame
+            df_data["Image"].append(f"Image_{i + 1}")
+            df_data["Prompt"].append(f"Prompt_{j + 1}")
+            df_data["Response"].append(response)
     
     progress_placeholder.empty()  # Clear the progress bar when processing is complete
     
